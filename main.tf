@@ -56,33 +56,33 @@ resource "aws_ecs_task_definition" "my_task" {
   requires_compatibilities = ["FARGATE"]
   memory                   = "512"
   cpu                      = "256"
-  #execution_role_arn = 
-  #task_role_arn = 
-  container_definitions = <<DEFINITION
-    [
-        {
-            "name": "my-container",
-            "image": "${aws_ecr_repository.my_repo.repository_url}:latest",
-            "memory": 512,
-            "cpu": 256,    
-            "essential": true,
-            "logConfiguration": {
-                "logDriver": "awslogs",
-                "options": {
-                    "awslogs-group": "/ecs/myAppLogs",
-                    "awslogs-region": "eu-north-1",
-                    "awslogs-stream-prefix": "ecs"
-                }
-            },
-            "environment": [
-                { "name": "PG_HOST", "value": "${aws_db_instance.my_postgresql.endpoint}" },
-                { "name": "PG_USER", "value": "dbadmin" },
-                { "name": "PG_DB", "value": "mydatabase" },
-                { "name": "PG_PORT", "value": "5432" }
-            ]
-        }
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  #task_role_arn            = 
+  container_definitions    = <<DEFINITION
+[
+  {
+    "name": "my-container",
+    "image": "${aws_ecr_repository.my_repo.repository_url}:latest",  # Pull the image from ECR
+    "memory": 512,
+    "cpu": 256,
+    "essential": true,
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/ecs/myAppLogs",
+        "awslogs-region": "eu-north-1",
+        "awslogs-stream-prefix": "ecs"
+      }
+    },
+    "environment": [
+      { "name": "PG_HOST", "value": "${aws_db_instance.my_postgresql.endpoint}" },
+      { "name": "PG_USER", "value": "dbadmin" },
+      { "name": "PG_DB", "value": "mydatabase" },
+      { "name": "PG_PORT", "value": "5432" }
     ]
-    DEFINITION
+  }
+]
+DEFINITION
 }
 
 # RDS PostgreSQL instance 
@@ -102,4 +102,23 @@ resource "aws_db_instance" "my_postgresql" {
 resource "aws_db_subnet_group" "my_subnet_group" {
   name = "my-db-subnet-group"
   subnet_ids = [aws_subnet.private_subnet_1.id, aws_subnet.private_subnet_2.id]
+}
+
+# IAM role for ECS task execution
+resource "aws_iam_role" "ecs_task_execution_role" {
+  name = "ecs-task-execution-role"
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
 }
