@@ -38,3 +38,8 @@ resource "aws_security_group" "db_sg" {
     security_groups = [ aws_security_group.fargate_sg.id ] # Allow traffic from ECS tasks
   }
 }
+
+# ECS cluster
+resource "aws_ecs_cluster" "my_cluster" {
+  name = "my-cluster"
+}
