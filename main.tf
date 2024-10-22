@@ -94,6 +94,12 @@ resource "aws_db_instance" "my_postgresql" {
   username               = "dbadmin"
   password               = "P@ssw0rd"
   vpc_security_group_ids = [aws_security_group.db_sg.id]
-  #db_subnet_group_name = 
+  db_subnet_group_name = aws_db_subnet_group.my_subnet_group.name
   skip_final_snapshot = true
+}
+
+# DB subnet group
+resource "aws_db_subnet_group" "my_subnet_group" {
+  name = "my-db-subnet-group"
+  subnet_ids = [aws_subnet.private_subnet_1.id, aws_subnet.private_subnet_2.id]
 }
