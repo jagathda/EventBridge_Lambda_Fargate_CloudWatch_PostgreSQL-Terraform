@@ -49,3 +49,38 @@ resource "aws_ecr_repository" "my_repo" {
   name = "message-logger"
 }
 
+# ECS task definition
+resource "aws_ecs_task_definition" "my_task" {
+  family = "my-task-family"
+  network_mode = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  memory = "512"
+  cpu = "256"
+  #execution_role_arn = 
+  #task_role_arn = 
+    container_definitions = <<DEFINITION
+    [
+        {
+            "name": "my-container",
+            "image": "${aws_ecr_repository.my_repo.repository_url}:latest",
+            "memory": 512,
+            "cpu": 256,    
+            "essential": true,
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/myAppLogs",
+                    "awslogs-region": "eu-north-1",
+                    "awslogs-stream-prefix": "ecs"
+                }
+            },
+            #"environment": [
+            #    { "name": "PG_HOST", "value": },
+            #    { "name": "PG_USER", "value": },
+            #    { "name": "PG_DB", "value": },
+            #    { "name": "PG_PORT", "value": }
+            ]
+        }
+    ]
+    DEFINITION
+}
