@@ -122,3 +122,29 @@ resource "aws_iam_role" "ecs_task_execution_role" {
 }
 EOF
 }
+
+# IAM role for ECS task role
+resource "aws_iam_role" "ecs_task_role" {
+  name = "ecs-task-role"
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ecs-tasks.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+
+#Attach policies to allow ECS to interact with AWS resources
+resource "aws_iam_policy_attachment" "ecs_execution_policy" {
+  name = "ecs-execution-policy"
+  roles = [aws_iam_role.ecs_task_execution_role.name]
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
