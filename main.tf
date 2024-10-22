@@ -43,3 +43,9 @@ resource "aws_security_group" "db_sg" {
 resource "aws_ecs_cluster" "my_cluster" {
   name = "my-cluster"
 }
+
+# ECR repository for container images
+resource "aws_ecr_repository" "my_repo" {
+  name = "message-logger"
+}
+
