@@ -94,19 +94,19 @@ resource "aws_db_instance" "my_postgresql" {
   username               = "dbadmin"
   password               = "P@ssw0rd"
   vpc_security_group_ids = [aws_security_group.db_sg.id]
-  db_subnet_group_name = aws_db_subnet_group.my_subnet_group.name
-  skip_final_snapshot = true
+  db_subnet_group_name   = aws_db_subnet_group.my_subnet_group.name
+  skip_final_snapshot    = true
 }
 
 # DB subnet group
 resource "aws_db_subnet_group" "my_subnet_group" {
-  name = "my-db-subnet-group"
+  name       = "my-db-subnet-group"
   subnet_ids = [aws_subnet.private_subnet_1.id, aws_subnet.private_subnet_2.id]
 }
 
 # IAM role for ECS task execution
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "ecs-task-execution-role"
+  name               = "ecs-task-execution-role"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -125,7 +125,7 @@ EOF
 
 # IAM role for ECS task role
 resource "aws_iam_role" "ecs_task_role" {
-  name = "ecs-task-role"
+  name               = "ecs-task-role"
   assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
@@ -144,30 +144,30 @@ EOF
 
 #Attach policy to allow ECS to interact with AWS resources
 resource "aws_iam_role_policy_attachment" "ecs_execution_policy" {
-  role = [aws_iam_role.ecs_task_execution_role.name]
+  role       = [aws_iam_role.ecs_task_execution_role.name]
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
 # Lambda function to invoke ECS task
 resource "aws_lambda_function" "ecs_invoker_lambda" {
   function_name = "ecs_invoker_lambda"
-  handler = "index.handler"
-  runtime = "nodejs18.x"
-  role = aws_iam_role.lambda_exec_role.arn
+  handler       = "index.handler"
+  runtime       = "nodejs18.x"
+  role          = aws_iam_role.lambda_exec_role.arn
 
   environment {
     variables = {
-      CLUSTER_NAME = aws_ecs_cluster.my_cluster.name
+      CLUSTER_NAME    = aws_ecs_cluster.my_cluster.name
       TASK_DEFINITION = aws_ecs_task_definition.my_task.arn
-      SUBNET_1 = aws_subnet.private_subnet_1
-      SUBNET_2 = aws_subnet.private_subnet_2
-      SECURITY_GROUP = aws_security_group.fargate_sg.id
+      SUBNET_1        = aws_subnet.private_subnet_1
+      SUBNET_2        = aws_subnet.private_subnet_2
+      SECURITY_GROUP  = aws_security_group.fargate_sg.id
     }
   }
 
   # S3 bucket and key for Lambda function code
-    s3_bucket = "lambda-code-bucket"
-    s3_key = "lambda-function.zip"
+  s3_bucket = "lambda-code-bucket"
+  s3_key    = "lambda-function.zip"
 }
 
 # IAM role for Lambda execution role
@@ -191,13 +191,13 @@ EOF
 
 # Attach policies to allow Lambda to execute
 resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
-  role      = aws_iam_role.lambda_exec_role.name
+  role       = aws_iam_role.lambda_exec_role.name
   policy_arn = "arn:aws:iam::aws:policy/AWSLambdaExecute"
 }
 
 # EventBridge rule to trigger Lambda
 resource "aws_cloudwatch_event_rule" "ecs_task_trigger" {
-  name = "ecs-task-trigger"
+  name          = "ecs-task-trigger"
   event_pattern = <<PATTERN
   {
     "source": ["custom.my-application"],
@@ -209,14 +209,20 @@ resource "aws_cloudwatch_event_rule" "ecs_task_trigger" {
 # EventBridge target to invoke Lambda
 resource "aws_cloudwatch_event_target" "ecs_invoker_target" {
   rule = aws_cloudwatch_event_rule.ecs_task_trigger.name
-  arn = aws_lambda_function.ecs_invoker_lambda.arn
+  arn  = aws_lambda_function.ecs_invoker_lambda.arn
 }
 
 # Lambda permission for EventBridge
 resource "aws_lambda_permission" "allow_eventbridge" {
-  statement_id = "AllowExecutionFromEventBridge"
-  action =  = "lambda:InvokeFunction"
+  statement_id  = "AllowExecutionFromEventBridge"
+  action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.ecs_invoker_lambda.function_name
-  principal = "events.amazonaws.com"
-  source_arn = aws_cloudwatch_event_rule.ecs_task_trigger.arn
+  principal     = "events.amazonaws.com"
+  source_arn    = aws_cloudwatch_event_rule.ecs_task_trigger.arn
+}
+
+# CloudWatch log group for ECS
+resource "aws_cloudwatch_log_group" "my_app_logs" {
+  name              = "/ecs/myAppLogs"
+  retention_in_days = 7
 }
