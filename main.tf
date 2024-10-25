@@ -206,3 +206,8 @@ resource "aws_cloudwatch_event_rule" "ecs_task_trigger" {
   PATTERN
 }
 
+# EventBridge target to invoke Lambda
+resource "aws_cloudwatch_event_target" "ecs_invoker_target" {
+  rule = aws_cloudwatch_event_rule.ecs_task_trigger.name
+  arn = aws_lambda_function.ecs_invoker_lambda.arn
+}
