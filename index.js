@@ -15,7 +15,7 @@ exports.handler = async (event) => {
     },
     overrides: {
       containerOverrides: [{
-        name: 'MyContainer',
+        name: 'my-container',
         environment: [
           { name: 'EVENT_PAYLOAD', value: JSON.stringify(event.detail) },
           { name: 'EVENT_TYPE', value: event['detail-type'] || 'Unknown' }
