@@ -9,14 +9,14 @@ resource "aws_vpc" "my_vpc" {
 
 # Subnets for the VPC
 resource "aws_subnet" "private_subnet_1" {
-  vpc_id     = aws_vpc.my_vpc.id
-  cidr_block = "10.0.1.0/24"
+  vpc_id            = aws_vpc.my_vpc.id
+  cidr_block        = "10.0.1.0/24"
   availability_zone = "eu-north-1a"
 }
 
 resource "aws_subnet" "private_subnet_2" {
-  vpc_id     = aws_vpc.my_vpc.id
-  cidr_block = "10.0.2.0/24"
+  vpc_id            = aws_vpc.my_vpc.id
+  cidr_block        = "10.0.2.0/24"
   availability_zone = "eu-north-1b"
 }
 
@@ -102,11 +102,11 @@ resource "aws_db_instance" "my_postgresql" {
 
 # DB subnet group
 resource "aws_db_subnet_group" "my_subnet_group" {
-  name       = "my-db-subnet-group"
+  name = "my-db-subnet-group"
   subnet_ids = [
-    aws_subnet.private_subnet_1.id, 
+    aws_subnet.private_subnet_1.id,
     aws_subnet.private_subnet_2.id
-    ]
+  ]
 }
 
 # IAM role for ECS task execution
@@ -175,6 +175,34 @@ resource "aws_lambda_function" "ecs_invoker_lambda" {
   s3_key    = "lambda-function.zip"
 }
 
+# IAM policy to allow Lambda to run ECS tasks
+resource "aws_iam_policy" "lambda_invoke_ecs_policy" {
+  name = "lambda-invoke-ecs-policy"
+
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "ecs:RunTask",
+          "iam:PassRole"
+        ],
+        "Resource" : [
+          aws_ecs_task_definition.my_task.arn,     # Allows ecs:RunTask on ECS task definition
+          aws_iam_role.ecs_task_execution_role.arn # Allows iam:PassRole on ECS task execution role 
+        ]
+      }
+    ]
+  })
+}
+
+# Attach policy to the Lambda execution role
+resource "aws_iam_role_policy_attachment" "lambda_invoke_ecs_policy_attachment" {
+  role = aws_iam_role.lambda_exec_role.name
+  policy_arn = aws_iam_policy.lambda_invoke_ecs_policy.arn
+}
+
 # IAM role for Lambda execution role
 resource "aws_iam_role" "lambda_exec_role" {
   name               = "lambda-execution-role"
@@ -206,7 +234,7 @@ resource "aws_cloudwatch_event_rule" "ecs_task_trigger" {
   event_pattern = <<PATTERN
   {
     "source": ["custom.my-application"],
-    "detail-type":["myDetaiType"]
+    "detail-type":["myDetailType"]
   }
   PATTERN
 }
