@@ -57,7 +57,7 @@ resource "aws_ecs_task_definition" "my_task" {
   memory                   = "512"
   cpu                      = "256"
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
-  #task_role_arn            = 
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
   container_definitions    = <<DEFINITION
 [
   {
@@ -147,4 +147,26 @@ resource "aws_iam_policy_attachment" "ecs_execution_policy" {
   name = "ecs-execution-policy"
   roles = [aws_iam_role.ecs_task_execution_role.name]
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+# Lambda function to invoke ECS task
+resource "aws_lambda_function" "ecs_invoker_lambda" {
+  function_name = "ecs_invoker_lambda"
+  handler = "index.handler"
+  runtime = "nodejs18.x"
+  role = 
+
+  environment {
+    variables = {
+      CLUSTER_NAME = aws_ecs_cluster.my_cluster.name
+      TASK_DEFINITION = aws_ecs_task_definition.my_task.arn
+      SUBNET_1 = aws_subnet.private_subnet_1
+      SUBNET_2 = aws_subnet.private_subnet_2
+      SECURITY_GROUP = aws_security_group.fargate_sg.id
+    }
+  }
+
+  # S3 bucket and key for Lambda function code
+    s3_bucket = "lambda-code-bucket"
+    s3_key = "lambda-function.zip"
 }
