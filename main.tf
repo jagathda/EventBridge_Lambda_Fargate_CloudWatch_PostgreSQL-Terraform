@@ -94,7 +94,7 @@ resource "aws_db_instance" "my_postgresql" {
   allocated_storage      = 20
   db_name                = "mydatabase"
   username               = "dbadmin"
-  password               = "P@ssw0rd"
+  password               = "Pa$$w0rd"
   vpc_security_group_ids = [aws_security_group.db_sg.id]
   db_subnet_group_name   = aws_db_subnet_group.my_subnet_group.name
   skip_final_snapshot    = true
