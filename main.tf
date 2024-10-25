@@ -154,7 +154,7 @@ resource "aws_lambda_function" "ecs_invoker_lambda" {
   function_name = "ecs_invoker_lambda"
   handler = "index.handler"
   runtime = "nodejs18.x"
-  role = 
+  role = aws_iam_role.lambda_exec_role.arn
 
   environment {
     variables = {
@@ -169,4 +169,23 @@ resource "aws_lambda_function" "ecs_invoker_lambda" {
   # S3 bucket and key for Lambda function code
     s3_bucket = "lambda-code-bucket"
     s3_key = "lambda-function.zip"
+}
+
+# IAM role for Lambda execution role
+resource "aws_iam_role" "lambda_exec_role" {
+  name               = "lambda-execution-role"
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
 }
