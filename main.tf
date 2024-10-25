@@ -64,7 +64,7 @@ resource "aws_ecs_task_definition" "my_task" {
 [
   {
     "name": "my-container",
-    "image": "${aws_ecr_repository.my_repo.repository_url}:latest",  # Pull the image from ECR
+    "image": "${aws_ecr_repository.my_repo.repository_url}:latest",
     "memory": 512,
     "cpu": 256,
     "essential": true,
