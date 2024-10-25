@@ -10,12 +10,12 @@ resource "aws_vpc" "my_vpc" {
 # Subnets for the VPC
 resource "aws_subnet" "private_subnet_1" {
   vpc_id     = aws_vpc.my_vpc.id
-  cidr_block = "10.0.1.0"
+  cidr_block = "10.0.1.0/24"
 }
 
 resource "aws_subnet" "private_subnet_2" {
   vpc_id     = aws_vpc.my_vpc.id
-  cidr_block = "10.0.2.0"
+  cidr_block = "10.0.2.0/24"
 }
 
 # Security groups
@@ -144,7 +144,7 @@ EOF
 
 #Attach policy to allow ECS to interact with AWS resources
 resource "aws_iam_role_policy_attachment" "ecs_execution_policy" {
-  role       = [aws_iam_role.ecs_task_execution_role.name]
+  role       = aws_iam_role.ecs_task_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
@@ -159,8 +159,8 @@ resource "aws_lambda_function" "ecs_invoker_lambda" {
     variables = {
       CLUSTER_NAME    = aws_ecs_cluster.my_cluster.name
       TASK_DEFINITION = aws_ecs_task_definition.my_task.arn
-      SUBNET_1        = aws_subnet.private_subnet_1
-      SUBNET_2        = aws_subnet.private_subnet_2
+      SUBNET_1        = aws_subnet.private_subnet_1.id
+      SUBNET_2        = aws_subnet.private_subnet_2.id
       SECURITY_GROUP  = aws_security_group.fargate_sg.id
     }
   }

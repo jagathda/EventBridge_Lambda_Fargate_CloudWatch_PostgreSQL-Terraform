@@ -1,0 +1,24 @@
+# Terraform files
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# Terraform lock files
+.terraform.lock.hcl
+
+# Crash log files
+crash.log
+
+# Exclude environment files if you store secrets in them
+.env
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+*.suo
+*.user
+*.userossc
+*.sln.docstates
