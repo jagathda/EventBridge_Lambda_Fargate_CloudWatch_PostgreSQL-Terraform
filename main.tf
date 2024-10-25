@@ -166,7 +166,7 @@ resource "aws_lambda_function" "ecs_invoker_lambda" {
   }
 
   # S3 bucket and key for Lambda function code
-  s3_bucket = "lambda-code-bucket"
+  s3_bucket = "lambdafunction-to-invoke-ecstask"
   s3_key    = "lambda-function.zip"
 }
 
