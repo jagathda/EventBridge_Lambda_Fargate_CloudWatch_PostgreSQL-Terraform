@@ -11,11 +11,13 @@ resource "aws_vpc" "my_vpc" {
 resource "aws_subnet" "private_subnet_1" {
   vpc_id     = aws_vpc.my_vpc.id
   cidr_block = "10.0.1.0/24"
+  availability_zone = "eu-north-1a"
 }
 
 resource "aws_subnet" "private_subnet_2" {
   vpc_id     = aws_vpc.my_vpc.id
   cidr_block = "10.0.2.0/24"
+  availability_zone = "eu-north-1b"
 }
 
 # Security groups
@@ -101,7 +103,10 @@ resource "aws_db_instance" "my_postgresql" {
 # DB subnet group
 resource "aws_db_subnet_group" "my_subnet_group" {
   name       = "my-db-subnet-group"
-  subnet_ids = [aws_subnet.private_subnet_1.id, aws_subnet.private_subnet_2.id]
+  subnet_ids = [
+    aws_subnet.private_subnet_1.id, 
+    aws_subnet.private_subnet_2.id
+    ]
 }
 
 # IAM role for ECS task execution
