@@ -194,3 +194,15 @@ resource "aws_iam_role_policy_attachment" "lambda_policy_attachment" {
   role      = aws_iam_role.lambda_exec_role.name
   policy_arn = "arn:aws:iam::aws:policy/AWSLambdaExecute"
 }
+
+# EventBridge rule to trigger Lambda
+resource "aws_cloudwatch_event_rule" "ecs_task_trigger" {
+  name = "ecs-task-trigger"
+  event_pattern = <<PATTERN
+  {
+    "source": ["custom.my-application"],
+    "detail-type":["myDetaiType"]
+  }
+  PATTERN
+}
+
