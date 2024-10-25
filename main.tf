@@ -211,3 +211,12 @@ resource "aws_cloudwatch_event_target" "ecs_invoker_target" {
   rule = aws_cloudwatch_event_rule.ecs_task_trigger.name
   arn = aws_lambda_function.ecs_invoker_lambda.arn
 }
+
+# Lambda permission for EventBridge
+resource "aws_lambda_permission" "allow_eventbridge" {
+  statement_id = "AllowExecutionFromEventBridge"
+  action =  = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.ecs_invoker_lambda.function_name
+  principal = "events.amazonaws.com"
+  source_arn = aws_cloudwatch_event_rule.ecs_task_trigger.arn
+}
