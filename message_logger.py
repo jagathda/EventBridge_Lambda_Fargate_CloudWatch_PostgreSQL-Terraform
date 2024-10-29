@@ -2,6 +2,7 @@ import os
 import logging
 import psycopg2
 from psycopg2 import sql
+import json
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -20,6 +21,14 @@ pg_user = os.getenv('PG_USER')
 pg_password = os.getenv('PG_PASSWORD')
 pg_db = os.getenv('PG_DB')
 pg_port = os.getenv('PG_PORT', 5432)
+
+#Check if PG_PASSWORD is a JSON-encoded object
+try:
+    pg_password_data = json.loads(pg_password) if pg_password else {}
+    pg_password = pg_password_data.get("password", pg_password)  # Use "password" key if present
+except json.JSONDecodeError:
+    # If not JSON, assume it's a plain password string
+    pass
 
 # Connect to PostgreSQL and log the event
 conn = None
